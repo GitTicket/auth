@@ -1,10 +1,9 @@
 import express, { Request, Response } from "express";
 import { body } from "express-validator";
-import jwt from 'jsonwebtoken';
+import jwt from "jsonwebtoken";
 
-import { validateRequest } from "../middlewares/validate-request";
+import { validateRequest, BadRequestError } from "@gittrix/common";
 import { User } from "../models/user";
-import { BadRequestError } from "../errors/bad-request-error";
 import { Password } from "../services/password";
 
 const router = express.Router();
@@ -23,17 +22,23 @@ router.post(
     const { email, password } = req.body;
     const existingUser = await User.findOne({ email });
     if (!existingUser) {
-      throw new BadRequestError('Invalid Credentails');
+      throw new BadRequestError("Invalid Credentails");
     }
 
-    const passwordsMatch = await Password.compare(existingUser.password, password);
+    const passwordsMatch = await Password.compare(
+      existingUser.password,
+      password
+    );
     if (!passwordsMatch) {
-      throw new BadRequestError('Invalid Credentails');
+      throw new BadRequestError("Invalid Credentails");
     }
 
     // Generate JWT
-    jwt
-    const userJwt = jwt.sign({ id: existingUser.id, email: existingUser.email }, process.env.JWT_KEY!);
+    jwt;
+    const userJwt = jwt.sign(
+      { id: existingUser.id, email: existingUser.email },
+      process.env.JWT_KEY!
+    );
 
     // Store it on session object
     req.session = { jwt: userJwt };
